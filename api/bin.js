@@ -3,7 +3,7 @@ var router = express.Router();
 
 // Load the MySQL pool connection
 const pool = require('../db-config');
-var table = 'bin';
+var table = 'BIN';
 
 /* GET bins listing. */
 router.get('/', function(req, res, next) {

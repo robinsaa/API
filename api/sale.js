@@ -3,7 +3,7 @@ var router = express.Router();
 
 // Load the MySQL pool connection
 const pool = require('../db-config');
-var table = 'sale';
+var table = 'SALE';
 
 /* GET sales listing. */
 router.get('/', function(req, res, next) {

@@ -1,9 +1,11 @@
 var express = require('express');
+var createError = require('http-errors');
+var validate = require('../validate/cup')
 var router = express.Router();
 
 // Load the MySQL pool connection
 const pool = require('../db-config');
-var table = 'cup';
+var table = 'CUP';
 
 /* GET cups listing. */
 router.get('/', function(req, res, next) {
@@ -47,6 +49,15 @@ router.get('/:id', function(req, res, next){
 
 // POST to cup
 router.post('/', function(req, res, next){
+  /* 
+  if(validate.checkSize(req.body.size) == false){
+    // throw some error
+    // var err = new err
+  }
+  if(validate.checkStatus(req.body.status) == false){
+    // throw some error
+  }
+ */
   pool.getConnection(function(err, connection) {
     if (err) throw err; // not connected!
    

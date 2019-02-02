@@ -3,7 +3,7 @@ var router = express.Router();
 
 // Load the MySQL pool connection
 const pool = require('../db-config');
-var table = 'borrowcupdb.return';
+var table = '`RETURN`';
 
 /* GET returns listing. */
 router.get('/', function(req, res, next) {

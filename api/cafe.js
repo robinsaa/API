@@ -130,4 +130,24 @@ router.delete('/:id', function(req, res, next){
   });
 });
 
+// GET cafe details by name password
+router.get('/:name/:password', function(req, res, next){
+  pool.getConnection(function(err, connection) {
+    if (err) throw err; // not connected!
+   
+    // Use the connection
+    connection.query('SELECT * FROM ' + table + ' WHERE name = \'' + req.params.name + '\' AND password = \'' + req.params.password + '\'', function (error, result, fields) {
+      // When done with the connection, release it.
+      connection.release();
+   
+      // Handle error after the release.
+      if (error) throw error;
+
+      // Don't use the connection here, it has been returned to the pool.
+      console.log(result);
+      res.send(result);
+    });
+  });
+})
+
 module.exports = router;

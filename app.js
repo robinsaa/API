@@ -10,6 +10,7 @@ var cupRouter = require('./api/cup');
 var binRouter = require('./api/bin');
 var saleRouter = require('./api/sale');
 var returnRouter = require('./api/return');
+var dishwasherRouter = require('./api/dishwasher');
 
 var app = express();
 
@@ -29,6 +30,7 @@ app.use('/api/cup', cupRouter);
 app.use('/api/bin', binRouter);
 app.use('/api/sale', saleRouter);
 app.use('/api/return', returnRouter);
+app.use('/api/dishwasher', dishwasherRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

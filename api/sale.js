@@ -91,7 +91,7 @@ router.post('/', function(req, res, next){
 
             // Don't use the connection here, it has been returned to the pool.
             console.log(result);
-            res.status(201).send(`Sale recorded with ID: ${log}`);
+            res.status(201).send(`{"message" : "Sale recorded with ID: ${log}"}`);
           });
         });
       });
@@ -128,11 +128,11 @@ router.put('/:id', function(req, res, next){
       // Don't use the connection here, it has been returned to the pool.
       console.log(result);
       if(result.changedRows == 1)
-        res.send('Sale record updated successfully');
+        res.send(`{"message" : "Sale record updated successfully"}`);
       else if(result.changedRows == 0)
-        res.send('Sale record not found. TO BE CHANGED AS AN ERROR!')
+        res.send(`{"message" : "Sale record not found. TO BE CHANGED AS AN ERROR!"}`);
       else 
-        res.send(result.changedRows + ' rows updated. TO BE CHANGED AS AN ERROR!');
+        res.send(`{"message" : "${result.changedRows} rows updated. TO BE CHANGED AS AN ERROR!"}`);
     });
   });
 });
@@ -156,11 +156,11 @@ router.delete('/:id', function(req, res, next){
       // Don't use the connection here, it has been returned to the pool.
       console.log(result);
       if(result.affectedRows == 1)
-        res.send('Sale record deleted successfully');
+        res.send(`{"message" : "Sale record deleted successfully"}`);
       else if(result.affectedRows == 0)
-        res.send('Sale record not found. TO BE CHANGED AS AN ERROR!')
+        res.send(`{"message" : "Sale record not found. TO BE CHANGED AS AN ERROR!"}`);
       else 
-        res.send(result.affectedRows + ' rows deleted. TO BE CHANGED AS AN ERROR!');
+        res.send(`{"message" : "${result.affectedRows} rows deleted. TO BE CHANGED AS AN ERROR!"}`);
     });
   });
 });
@@ -232,7 +232,7 @@ router.post('/cache/', function(req, res, next){
     
                 // Don't use the connection here, it has been returned to the pool.
                 console.log(result);
-                res.status(201).send(`${result.affectedRows} sale records added.`);
+                res.status(201).send(`{"message" : "${result.affectedRows} sale records added."}`);
               });
             });
           });

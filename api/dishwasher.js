@@ -63,7 +63,7 @@ router.post('/', function(req, res, next){
 
       // Don't use the connection here, it has been returned to the pool.
       console.log(result);
-      res.status(201).send(`Dishwasher created with ID: ${result.insertId}`);
+      res.status(201).send(`{"message" : "Dishwasher created with ID: ${result.insertId}"}`);
     });
   });
 })
@@ -93,11 +93,11 @@ router.put('/:id', function(req, res, next){
       // Don't use the connection here, it has been returned to the pool.
       console.log(result);
       if(result.changedRows == 1)
-        res.send('Dishwasher updated successfully');
+        res.send(`{"message" : "Dishwasher updated successfully"}`);
       else if(result.changedRows == 0)
-        res.send('Dishwasher not found. TO BE CHANGED AS AN ERROR!')
+        res.send(`{"message" : "Dishwasher not found. TO BE CHANGED AS AN ERROR!"}`);
       else 
-        res.send(result.changedRows + ' rows updated. TO BE CHANGED AS AN ERROR!');
+        res.send(`{"message" : "${result.changedRows} rows updated. TO BE CHANGED AS AN ERROR!"}`);
     });
   });
 });
@@ -121,11 +121,11 @@ router.delete('/:id', function(req, res, next){
       // Don't use the connection here, it has been returned to the pool.
       console.log(result);
       if(result.affectedRows == 1)
-        res.send('Dishwasher deleted successfully');
+        res.send(`{"message" : "Dishwasher deleted successfully"}`);
       else if(result.affectedRows == 0)
-        res.send('Dishwasher not found. TO BE CHANGED AS AN ERROR!')
+        res.send(`{"message" : "Dishwasher not found. TO BE CHANGED AS AN ERROR!"}`);
       else 
-        res.send(result.affectedRows + ' rows deleted. TO BE CHANGED AS AN ERROR!');
+        res.send(`{"message" : "${result.affectedRows} rows deleted. TO BE CHANGED AS AN ERROR!"}`);
     });
   });
 });

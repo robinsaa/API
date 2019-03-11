@@ -63,7 +63,7 @@ router.post('/', function(req, res, next){
 
       // Don't use the connection here, it has been returned to the pool.
       console.log(result);
-      res.status(201).send(`Bin added with ID: ${result.insertId}`);
+      res.status(201).send(`{"message" : "Bin added with ID: ${result.insertId}"}`);
     });
   });
 })
@@ -96,11 +96,11 @@ router.put('/:id', function(req, res, next){
       // Don't use the connection here, it has been returned to the pool.
       console.log(result);
       if(result.changedRows == 1)
-        res.send('Bin updated successfully');
+        res.send(`{"message" : "Bin updated successfully"}`);
       else if(result.changedRows == 0)
-        res.send('Bin not found. TO BE CHANGED AS AN ERROR!')
+        res.send(`{"message" : "Bin not found. TO BE CHANGED AS AN ERROR!"}`);
       else 
-        res.send(result.changedRows + ' rows updated. TO BE CHANGED AS AN ERROR!');
+        res.send(`{"message" : "${result.changedRows} rows updated. TO BE CHANGED AS AN ERROR!"}`);
     });
   });
 });
@@ -124,11 +124,11 @@ router.delete('/:id', function(req, res, next){
       // Don't use the connection here, it has been returned to the pool.
       console.log(result);
       if(result.affectedRows == 1)
-        res.send('Bin deleted successfully');
+        res.send(`{"message" : "Bin deleted successfully"}`);
       else if(result.affectedRows == 0)
-        res.send('Bin not found. TO BE CHANGED AS AN ERROR!')
+        res.send(`{"message" : "Bin not found. TO BE CHANGED AS AN ERROR!"}`);
       else 
-        res.send(result.affectedRows + ' rows deleted. TO BE CHANGED AS AN ERROR!');
+        res.send(`{"message" : "${result.affectedRows} rows deleted. TO BE CHANGED AS AN ERROR!"}`);
     });
   });
 });

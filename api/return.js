@@ -60,7 +60,7 @@ router.post('/', function(req, res, next){
       connection.beginTransaction(function(err) {
         if (err) { throw err; }
         // Build query
-        var query = 'INSERT INTO ' + table + ' (cup_id, dishwasher_id, scanned_at) VALUES (' + req.body.cup_id + ', ' + ', ' + req.body.dishwasher_id + ', current_timestamp())';
+        var query = 'INSERT INTO ' + table + ' (cup_id, dishwasher_id, scanned_at) VALUES (' + req.body.cup_id + ', ' + req.body.dishwasher_id + ', current_timestamp())';
         console.log(query);
 
         connection.query(query, function(err, result) {

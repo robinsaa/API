@@ -136,7 +136,9 @@ router.get('/:name/:password', function(req, res, next){
     if (err) throw err; // not connected!
    
     // Use the connection
-    connection.query('SELECT * FROM ' + table + ' WHERE name = \'' + req.params.name + '\' AND password = \'' + req.params.password + '\'', function (error, result, fields) {
+    var query = 'SELECT * FROM ' + table + ' WHERE name = \'' + req.params.name + '\' AND password = \'' + req.params.password + '\'';
+    console.log(query);
+    connection.query(query, function (error, result, fields) {
       // When done with the connection, release it.
       connection.release();
    

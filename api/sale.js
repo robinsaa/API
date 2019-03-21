@@ -48,56 +48,68 @@ router.get('/:id', function(req, res, next){
 
 // POST a sale record
 router.post('/', function(req, res, next){
-  pool.getConnection(function(err, connection) {
-    if (err) throw err; // not connected!
 
-    /* Begin transaction */
-    connection.beginTransaction(function(err) {
-      if (err) { throw err; }
-      // Build query
-      var query = 'INSERT INTO ' + table + ' (cup_id, cafe_id, scanned_at) VALUES (' + req.body.cup_id + ', ' + req.body.cafe_id + ', current_timestamp())';
-      console.log(query);
+  //Temporary Validation. Remove the following code when the validation is done separately
+  //and in structured manner!
+  var re = new RegExp(/^\d{10}$/);
+  if(re.test(req.body.cup_id)){
+    //End of Validation. Remove the code till here and also the curly brace at the bottom of this method.
+    pool.getConnection(function(err, connection) {
+      if (err) throw err; // not connected!
 
-      connection.query(query, function(err, result) {
-        if (err) { 
-          console.log('Rolling back...');
-          connection.rollback(function() {
-            throw err;
-          });
-        }
-    
-        const log = result.insertId;
-
+      /* Begin transaction */
+      connection.beginTransaction(function(err) {
+        if (err) { throw err; }
         // Build query
-        var query = 'UPDATE CUP SET status = \'B\' WHERE id = ' + req.body.cup_id + ';';
+        var query = 'INSERT INTO ' + table + ' (cup_id, cafe_id, scanned_at) VALUES (' + req.body.cup_id + ', ' + req.body.cafe_id + ', current_timestamp())';
         console.log(query);
+
         connection.query(query, function(err, result) {
           if (err) { 
             console.log('Rolling back...');
             connection.rollback(function() {
               throw err;
             });
-          }  
-          connection.commit(function(err) {
+          }
+      
+          const log = result.insertId;
+
+          // Build query
+          var query = 'UPDATE CUP SET status = \'B\' WHERE id = ' + req.body.cup_id + ';';
+          console.log(query);
+          connection.query(query, function(err, result) {
             if (err) { 
               console.log('Rolling back...');
               connection.rollback(function() {
                 throw err;
               });
-            }
-            console.log('Transaction Completed Successfully.');
-            // When done with the connection, release it.
-            connection.release();
+            }  
+            connection.commit(function(err) {
+              if (err) { 
+                console.log('Rolling back...');
+                connection.rollback(function() {
+                  throw err;
+                });
+              }
+              console.log('Transaction Completed Successfully.');
+              // When done with the connection, release it.
+              connection.release();
 
-            // Don't use the connection here, it has been returned to the pool.
-            console.log(result);
-            res.status(201).send(`{"message" : "Sale recorded with ID: ${log}"}`);
+              // Don't use the connection here, it has been returned to the pool.
+              console.log(result);
+              res.status(201).send(`{"message" : "Sale recorded with ID: ${log}"}`);
+            });
           });
         });
       });
+      /* End transaction */
     });
-    /* End transaction */
-  });
+  }
+  // Validation else part:
+  // To be removed when validation is done formally.
+  else{
+    res.send(`{"message" : "Invalid Cup Id!"}`);
+  }
 });
 
 // PUT (update) to a sale record by id
@@ -167,6 +179,10 @@ router.delete('/:id', function(req, res, next){
 
 // POST the cached sale records
 router.post('/cache/', function(req, res, next){
+
+  // Temporary Validation. Remove the bits of code marked as /* Validation code */ when the validation
+  // is done separately and in structured manner!
+  var re = new RegExp(/^\d{10}$/);                   /* Validation code */
   pool.getConnection(function(err, connection) {
     if (err) throw err; // not connected!
 
@@ -183,59 +199,75 @@ router.post('/cache/', function(req, res, next){
           if (err) { throw err; }
           // Build query
           var query = 'INSERT INTO ' + table + ' (cup_id, cafe_id, scanned_at) VALUES ';
-          second_query_part = '(';
+          secondQueryPart = '(';
+          addedRecords = 0;
+          rejectedRecords = 0;                    /* Validation code */
           for(var index = 0; index < req.body.length; index++){
             var obj = req.body[index];
-            query += '(' + obj.cup_id + ', ' + obj.cafe_id + ', \'' + obj.scanned_at + '\')';
-            second_query_part += obj.cup_id;
-            if(index < req.body.length - 1) {
-              query += ',';
-              second_query_part += ', ';
+            if(re.test(obj.cup_id)) {             /* Validation code */
+              if(addedRecords > 0) {
+                query += ',';
+                secondQueryPart += ', ';
+              }
+              addedRecords += 1;
+              query += '(' + obj.cup_id + ', ' + obj.cafe_id + ', \'' + obj.scanned_at + '\')';
+              secondQueryPart += obj.cup_id;
             }
-            else {
+            else{                               /* Validation code */
+              rejectedRecords += 1;               /* Validation code */
+            }
+            if(index == req.body.length - 1) {
               query += ';';
-              second_query_part += ');';
+              secondQueryPart += ');';
             }
           }
-          console.log(query);
-          // Use the connection
-          connection.query(query, function(err, result) {
-            if (err) { 
-              console.log('Rolling back...');
-              connection.rollback(function() {
-                throw err;
-              });
-            }
-
-            const log = result.affectedRows;
-            // Build query
-            var query = 'UPDATE CUP SET status = \'B\' WHERE id IN ' + second_query_part;
+          if(rejectedRecords != req.body.length){   /* Validation code */
             console.log(query);
-
+            // Use the connection
             connection.query(query, function(err, result) {
               if (err) { 
                 console.log('Rolling back...');
                 connection.rollback(function() {
                   throw err;
                 });
-              }  
-              connection.commit(function(err) {
+              }
+
+              const log = result.affectedRows;
+              // Build query
+              var query = 'UPDATE CUP SET status = \'B\' WHERE id IN ' + secondQueryPart;
+              console.log(query);
+
+              connection.query(query, function(err, result) {
                 if (err) { 
                   console.log('Rolling back...');
                   connection.rollback(function() {
                     throw err;
                   });
-                }
-                console.log('Transaction Completed Successfully.');
-                // When done with the connection, release it.
-                connection.release();
-    
-                // Don't use the connection here, it has been returned to the pool.
-                console.log(result);
-                res.status(201).send(`{"message" : "${result.affectedRows} sale records added."}`);
+                }  
+                connection.commit(function(err) {
+                  if (err) { 
+                    console.log('Rolling back...');
+                    connection.rollback(function() {
+                      throw err;
+                    });
+                  }
+                  console.log('Transaction Completed Successfully.');
+                  // When done with the connection, release it.
+                  connection.release();
+      
+                  // Don't use the connection here, it has been returned to the pool.
+                  console.log(result);
+
+                  // Remove the latter reject records part when validation is done formally or may be not!!??.
+                  rejectStatement =  `${rejectedRecords} records rejected due to incorrect Cup Ids.`; /* Validation code */
+                  res.status(201).send(`{"message" : "${result.affectedRows} sale records added. ` + rejectStatement + `"}`);
+                });
               });
             });
-          });
+          }
+          else { /* Validation code */
+            res.status(201).send(`{"message" : "All of the ${rejectedRecords} records rejected due to incorrect Cup Ids."}`); /* Validation code */
+          }
         });
         /* End transaction */
       }

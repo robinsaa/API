@@ -13,9 +13,9 @@ const config = {
 const config = {
     host: 'pfw0ltdr46khxib3.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
     port: 3306,
-    user: 'k9z4wkm7t1cr2ywi',
-    password: 'gx2dumj22g5vl7mw',
-    database: 'rzpnhe8v30e9tk16'
+    user: 'r5eclbki8gq7bgg5',
+    password: 'hjcaku8tztilzcui',
+    database: 'rhs5pq76ew4ry8b8'
 };
 
 // Create a MySQL pool

@@ -1,6 +1,6 @@
 var express = require('express');
 var createError = require('http-errors');
-var validate = require('../validate/cup')
+var validateCup = require('../validate/cup')
 var router = express.Router();
 
 // Load the MySQL pool connection
@@ -49,38 +49,37 @@ router.get('/:id', function(req, res, next){
 
 // POST to cup
 router.post('/', function(req, res, next){
-  /* 
-  if(validate.checkSize(req.body.size) == false){
-    // throw some error
-    // var err = new err
-  }
-  if(validate.checkStatus(req.body.status) == false){
-    // throw some error
-  }
- */
-  pool.getConnection(function(err, connection) {
-    if (err) throw err; // not connected!
-   
-    // Build query
-    var query = 'INSERT INTO ' + table + ' VALUES (' + req.body.id +', \'' + req.body.size + '\', \'' + req.body.status + '\', ' + req.body.batch_id + ', current_timestamp(), null)';
-    console.log(query);
-    // Use the connection
-    connection.query(query, function (error, result, fields) {
-      // When done with the connection, release it.
-      connection.release();
-   
-      // Handle error after the release.
-      if (error) throw error;
+  
+  // Validate cup id
+  if(validateCup.checkId(req.body.id)){
+    pool.getConnection(function(err, connection) {
+      if (err) throw err; // not connected!
+    
+      // Build query
+      var query = 'INSERT INTO ' + table + ' VALUES (' + req.body.id +', \'' + req.body.size + '\', \'' + req.body.status + '\', ' + req.body.batch_id + ', current_timestamp(), null)';
+      console.log(query);
+      // Use the connection
+      connection.query(query, function (error, result, fields) {
+        // When done with the connection, release it.
+        connection.release();
+    
+        // Handle error after the release.
+        if (error) throw error;
 
-      // Don't use the connection here, it has been returned to the pool.
-      console.log(result);
-      res.status(201).send(`{"message" : "Cup created with ID: ${req.body.id}"}`);
+        // Don't use the connection here, it has been returned to the pool.
+        console.log(result);
+        res.status(201).send(`{"message" : "Cup created with ID: ${req.body.id}"}`);
+      });
     });
-  });
+  }
+  else{
+    res.send(`{"message" : "Invalid Cup Id!"}`);
+  }
 })
 
 // PUT (update) to a cup by id
 router.put('/:id', function(req, res, next){
+
   pool.getConnection(function(err, connection) {
     if (err) throw err; // not connected!
    

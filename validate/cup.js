@@ -16,3 +16,10 @@ function checkStatus(status){
     }
     return false
 }
+
+function checkId(cup_id){
+    var re = new RegExp(/^\d{10}$/);
+    return re.test(cup_id)
+}
+
+module.exports = {checkId};

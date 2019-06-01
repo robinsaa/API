@@ -27,6 +27,46 @@ router.get('/', function(req, res, next) {
   });
 });
 
+/* GET total number of cups between 2 dates if supplied. Format accepted - YYYY/MM/DD */
+router.get('/count', function(req, res, next) {
+  
+  startDate = (req.query.startDate)? (String(req.query.startDate) + ' 00:00:00') : null
+  endDate = (req.query.endDate) ? (String(req.query.endDate) + ' 00:00:00') : null
+  if(startDate == null){
+    if(endDate == null){
+      sqlCommand = 'SELECT COUNT(*) AS COUNT FROM ' + table
+    }
+    else{
+      sqlCommand = 'SELECT COUNT(*) AS COUNT FROM ' + table + ' WHERE created_at <= \'' + endDate + '\''
+    }
+  }
+  else{
+    if(endDate == null){
+      sqlCommand = 'SELECT COUNT(*) AS COUNT FROM ' + table + ' WHERE created_at >= \'' + startDate  + '\''
+    }
+    else{
+      sqlCommand = 'SELECT COUNT(*) AS COUNT FROM ' + table + ' WHERE created_at BETWEEN \'' + startDate + '\' AND \'' + endDate  + '\''
+    }
+  }
+  console.log(sqlCommand)
+  pool.getConnection(function(err, connection) {
+    if (err) throw err; // not connected!
+   
+    // Use the connection
+    connection.query(sqlCommand, function (error, results, fields) {
+      // When done with the connection, release it.
+      connection.release();
+   
+      // Handle error after the release.
+      if (error) throw error;
+
+      // Don't use the connection here, it has been returned to the pool.
+      console.log(results);
+      res.send(results);
+    });
+  });
+});
+
 // GET cups by id
 router.get('/:id', function(req, res, next){
   pool.getConnection(function(err, connection) {

@@ -5,18 +5,12 @@ const mysql = require('mysql');
 const config = {
     host: 'localhost',
     user: 'root',
-    password: 'borrowcup',
-    database: 'borrowcupdb',
+    password: 'your_password',
+    database: 'your_database_name',
 };
 */
 
-const config = {
-    host: 'pfw0ltdr46khxib3.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
-    port: 3306,
-    user: 'k9z4wkm7t1cr2ywi',
-    password: 'gx2dumj22g5vl7mw',
-    database: 'rzpnhe8v30e9tk16'
-};
+
 
 // Create a MySQL pool
 const pool = mysql.createPool(config);

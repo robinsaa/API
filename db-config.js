@@ -1,4 +1,9 @@
 const mysql = require('mysql');
+const dotenv = require('dotenv');
+dotenv.config();
+
+jawsdb_url = process.env.JAWSDB_URL;
+// console.log(`Your JAWSDB_URL is ` + jawsdb_url);
 
 // Set database connection credentials
 /*
@@ -10,17 +15,8 @@ const config = {
 };
 */
 
-// Dev credentials
-const config = {
-    host: 'pfw0ltdr46khxib3.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
-    port: 3306,
-    user: 'r5eclbki8gq7bgg5',
-    password: 'hjcaku8tztilzcui',
-    database: 'rhs5pq76ew4ry8b8'
-};
-
 // Create a MySQL pool
-const pool = mysql.createPool(config);
+const pool = mysql.createPool(jawsdb_url);
 
 // Export the pool
 module.exports = pool;

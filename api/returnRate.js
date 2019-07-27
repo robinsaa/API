@@ -184,7 +184,6 @@ const pool = require('../db-config');
 // });
 
 router.get('/', function(req, res, next) {
-    console.log("hi Ari")
     pool.getConnection(function(err, connection) {
         if (err) throw err; // not connected!
        

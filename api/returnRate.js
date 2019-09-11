@@ -183,6 +183,7 @@ const pool = require('../db-config');
 //     res.send(allData);
 // });
 
+// Return rate
 router.get('/', function(req, res, next) {
     pool.getConnection(function(err, connection) {
         if (err) throw err; // not connected!

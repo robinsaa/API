@@ -27,7 +27,7 @@ router.get('/', function(req, res, next) {
   });
 });
 
-/* GET total number of cups between 2 dates if supplied. Format accepted - YYYY/MM/DD */
+/* GET total number of cups added between 2 dates if supplied. Format accepted - YYYY/MM/DD */
 router.get('/count', function(req, res, next) {
   
   startDate = (req.query.startDate)? (String(req.query.startDate) + ' 00:00:00') : null

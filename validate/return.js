@@ -3,10 +3,10 @@ function checkDuplicate(cup_id){
     if(returnArray.length != 0){
         // Get current date time
         date = new Date();
-        // To get time 3 minutes ago
+        // To get time 10 minutes ago
         date.setMinutes(date.getMinutes() - 10);
 
-        // Delete all cup ids saved more than 3 minutes ago
+        // Delete all cup ids saved more than 10 minutes ago
         for(var index = 0; index < returnArray.length; index++){
             if(returnArray[index][1] <= date){
                 returnArray.splice(index, 1)

@@ -51,7 +51,7 @@ router.post('/', function(req, res, next){
     if (err) throw err; // not connected!
    
     // Build query
-    var query = 'INSERT INTO ' + table + ' (name, password, latitude, longitude, created_at, updated_at) VALUES (\'' + req.body.name + '\', \'' + req.body.password + '\', ' + req.body.latitude + ', ' + req.body.longitude + ', current_timestamp(), null)';
+    var query = 'INSERT INTO ' + table + ' (cafe_name, name, password, latitude, longitude, created_at, updated_at) VALUES (\'' + req.body.cafe_name + '\', \'' + req.body.name + '\', \'' + req.body.password + '\', ' + req.body.latitude + ', ' + req.body.longitude + ', current_timestamp(), null)';
     console.log(query);
     // Use the connection
     connection.query(query, function (error, result, fields) {
@@ -75,6 +75,7 @@ router.put('/:id', function(req, res, next){
    
     // Build query
     var query = 'UPDATE ' + table + ' SET';
+    query += (req.body.cafe_name != null ? ' cafe_name = \'' + req.body.cafe_name + '\',' : '');
     query += (req.body.name != null ? ' name = \'' + req.body.name + '\',' : '');
     query += (req.body.password != null ? ' password = \'' + req.body.password + '\',' : '');
     query += (req.body.latitude != null ? ' latitude = ' + req.body.latitude + ',' : '');

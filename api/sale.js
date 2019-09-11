@@ -67,6 +67,7 @@ router.get('/count', function(req, res, next) {
   });
 });
 
+// Sale per cafe per day
 router.get('/salepercafeperday', function(req, res, next){
   console.log(req.body.name);
   var is_return_all = false;
@@ -74,30 +75,30 @@ router.get('/salepercafeperday', function(req, res, next){
     is_return_all = true;
   }
   else{
-    var cafe_names = '(';
+    var cafe_usernames = '(';
     if(Array.isArray(req.body.name)){
       for(var i = 0; i < req.body.name.length; i++){
         if(i < req.body.name.length - 1){
-          cafe_names += '\'' + req.body.name[i] + '\', ';
+          cafe_usernames += '\'' + req.body.name[i] + '\', ';
         }
         else{
-          cafe_names += '\'' + req.body.name[i] + '\')';
+          cafe_usernames += '\'' + req.body.name[i] + '\')';
         }
       }
     }
     else{
-      cafe_names += '\'' + req.body.name + '\')';
+      cafe_usernames += '\'' + req.body.name + '\')';
     }
-    console.log(cafe_names);
+    console.log(cafe_usernames);
   }
 
   pool.getConnection(function(err, connection) {
     if (err) throw err; // not connected!
    
     // Use the connection
-    var query = 'SELECT cafe_id as \'CAFE_ID\', (SELECT name FROM CAFE WHERE id = CAFE_ID) as NAME, date_format(scanned_at, \'%d-%m-%Y\') as \'DATE\', COUNT(*) as \'COUNT\' FROM SALE '
+    var query = 'SELECT cafe_id as \'CAFE_ID\', (SELECT cafe_name FROM CAFE WHERE id = CAFE_ID) as \'CAFE_NAME\', date_format(scanned_at, \'%d-%m-%Y\') as \'DATE\', COUNT(*) as \'COUNT\' FROM SALE '
     if(is_return_all == false){
-      query += 'WHERE cafe_id in (SELECT id FROM CAFE WHERE name in ' + cafe_names + ')';
+      query += 'WHERE cafe_id in (SELECT id FROM CAFE WHERE name in ' + cafe_usernames + ')';
     }
      query += 'GROUP BY cafe_id, DATE(scanned_at)';
     console.log(query);
@@ -123,26 +124,6 @@ router.get('/:id', function(req, res, next){
     // Use the connection
     
     connection.query('SELECT * FROM ' + table + ' WHERE id = ' + req.params.id, function (error, result, fields) {
-      // When done with the connection, release it.
-      connection.release();
-   
-      // Handle error after the release.
-      if (error) throw error;
-
-      // Don't use the connection here, it has been returned to the pool.
-      console.log(result);
-      res.send(result);
-    });
-  });
-})
-
-router.get('/salepercafe/:name', function(req, res, next){
-  pool.getConnection(function(err, connection) {
-    if (err) throw err; // not connected!
-   
-    // Use the connection
-    
-    connection.query('SELECT cafe_id, date_format(scanned_at, \'%d-%m-%Y\') as date, COUNT(*) as count FROM ' + table + ' WHERE cafe_id = (SELECT id FROM CAFE WHERE name = \'' + req.params.name + '\') GROUP BY DATE(scanned_at)', function (error, result, fields) {
       // When done with the connection, release it.
       connection.release();
    

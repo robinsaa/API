@@ -116,24 +116,34 @@ router.get('/salepercafeperday', function(req, res, next){
   });
 })
 
-router.get('/last1000', function(req, res, next){
-  pool.getConnection(function(err, connection) {
-    if (err) throw err; // not connected!
-   
-    // Use the connection
-    
-    connection.query('SELECT s.id, s.cafe_id, c.cafe_name, s.cup_id, s.scanned_at FROM (SELECT * FROM SALE ORDER BY scanned_at DESC LIMIT 1000) s JOIN CAFE c ON s.cafe_id = c.id ORDER BY s.scanned_at DESC', function (error, result, fields) {
-      // When done with the connection, release it.
-      connection.release();
-   
-      // Handle error after the release.
-      if (error) throw error;
+router.get('/last', function(req, res, next){
 
-      // Don't use the connection here, it has been returned to the pool.
-      console.log(result);
-      res.send(result);
+  // validate count value
+  if(validateSale.checkCount(req.query.count)){
+    count = req.query.count;
+    console.log(count);
+    pool.getConnection(function(err, connection) {
+      if (err) throw err; // not connected!
+    
+      // Use the connection
+      
+      connection.query('SELECT s.id, s.cafe_id, c.cafe_name, s.cup_id, s.scanned_at FROM (SELECT * FROM SALE ORDER BY scanned_at DESC LIMIT ' + count + ') s JOIN CAFE c ON s.cafe_id = c.id ORDER BY s.scanned_at DESC', function (error, result, fields) {
+        // When done with the connection, release it.
+        connection.release();
+    
+        // Handle error after the release.
+        if (error) throw error;
+
+        // Don't use the connection here, it has been returned to the pool.
+        console.log(result);
+        res.send(result);
+      });
     });
-  });
+  }
+  else{
+    res.status(400);
+    res.send("Error: 'count' is either not specified or is not a number greater than zero!");
+  }
 })
 
 // GET sale record by id

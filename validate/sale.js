@@ -36,4 +36,14 @@ function checkDuplicate(cup_id){
     }
 }
 
+function checkCount(count){
+    if(!isNaN(count)){
+        if(count > 0 && count < 100000){
+            return true
+        }
+    }
+    return false
+}
+
 module.exports = {checkDuplicate};
+module.exports = {checkCount};

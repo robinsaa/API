@@ -45,5 +45,4 @@ function checkCount(count){
     return false
 }
 
-module.exports = {checkDuplicate};
-module.exports = {checkCount};
+module.exports = {checkDuplicate, checkCount};

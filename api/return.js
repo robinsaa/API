@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var validateCup = require('../validate/cup')
 var validateReturn = require('../validate/return')
+var dateTime = require('../common/datetime')
 
 // Load the MySQL pool connection
 const pool = require('../db-config');
@@ -22,6 +23,9 @@ router.get('/', function(req, res, next) {
 
       // Don't use the connection here, it has been returned to the pool.
       console.log(results);
+      results.forEach(record => {
+        record.scanned_at_melbourne_date_time = dateTime.utcToMelbourneTime(record.scanned_at);
+      });
       res.send(results);
     });
   });
@@ -30,8 +34,9 @@ router.get('/', function(req, res, next) {
 /* GET total number of returns between 2 dates if supplied. Format accepted - YYYY/MM/DD */
 router.get('/count', function(req, res, next) {
   
-  startDate = (req.query.startDate)? (String(req.query.startDate) + ' 00:00:00') : null
-  endDate = (req.query.endDate) ? (String(req.query.endDate) + ' 00:00:00') : null
+  startDate = (req.query.startDate)? dateTime.melbourneTimeToUTC(req.query.startDate) : null;
+  endDate = (req.query.endDate) ? dateTime.melbourneTimeToUTC(req.query.endDate) : null;
+  
   if(startDate == null){
     if(endDate == null){
       sqlCommand = 'SELECT COUNT(*) AS COUNT FROM ' + table
@@ -82,6 +87,9 @@ router.get('/:id', function(req, res, next){
 
       // Don't use the connection here, it has been returned to the pool.
       console.log(result);
+      result.forEach(record => {
+        record.scanned_at_melbourne_date_time = dateTime.utcToMelbourneTime(record.scanned_at);
+      });
       res.send(result);
     });
   });
@@ -162,21 +170,24 @@ router.put('/:id', function(req, res, next){
   // Validate cup id
   if(validateCup.checkId(req.body.cup_id)){
 
+    // Convert to UTC time
+    var utcTime = dateTime.melbourneTimeToUTC(req.body.scanned_at);
+
     pool.getConnection(function(err, connection) {
       if (err) throw err; // not connected!
     
       // Build query
       var query = 'UPDATE ' + table + ' SET';
       query += (req.body.cup_id != null ? ' cup_id = ' + req.body.cup_id : '');
-      if(req.body.cup_id != null && (req.body.bin_id != null || req.body.cafe_id != null || req.body.scanned_at != null))
+      if(req.body.cup_id != null && (req.body.bin_id != null || req.body.cafe_id != null || utcTime != null))
         query += ','
       query += (req.body.bin_id != null ? ' bin_id = ' + req.body.bin_id : '');
-      if(req.body.bin_id != null && (req.body.cafe_id != null || req.body.scanned_at != null))
+      if(req.body.bin_id != null && (req.body.cafe_id != null || utcTime != null))
         query += ','
       query += (req.body.cafe_id != null ? ' cafe_id = ' + req.body.cafe_id : '');
-      if(req.body.cafe_id != null && req.body.scanned_at != null)
+      if(req.body.cafe_id != null && utcTime != null)
         query += ','
-      query += (req.body.scanned_at != null ? ' scanned_at = \'' + req.body.scanned_at + '\'' : '');
+      query += (utcTime != null ? ' scanned_at = \'' + utcTime + '\'' : '');
       query += ' WHERE id = ' + req.params.id;
       console.log(query);
 
@@ -235,16 +246,36 @@ router.delete('/:id', function(req, res, next){
 // POST the cached return records
 router.post('/cache/', function(req, res, next){
 
-  pool.getConnection(function(err, connection) {
-    if (err) throw err; // not connected!
+  // Empty body check
+  if(req.body.constructor === Object && Object.keys(req.body).length === 0) {
+    console.log('Array missing');
+  }
+  else {
+    // Empty array check
+    if(req.body.length != 0) {
 
-    // Empty body check
-    if(req.body.constructor === Object && Object.keys(req.body).length === 0) {
-      console.log('Array missing');
-    }
-    else {
-      // Empty array check
-      if(req.body.length != 0) {
+      // sort by date time although we believe the records will already be sorted.
+      sortedRecords = dateTime.sortByDateTime(req.body);
+      var filteredRecords = [];
+      var duplicateRecords = [];
+      for(var index = 0; index < sortedRecords.length; index++){
+        var obj = sortedRecords[index];
+        if(validateReturn.checkCacheDuplicate(obj.cup_id, obj.scanned_at) == false){
+          filteredRecords.push(obj);
+        }
+        else{
+          duplicateRecords.push(obj);
+        }
+      }
+
+      outputObject = {
+        "inserted": null,
+        "rejected": null,
+        "duplicatesFound":null
+      };
+
+      pool.getConnection(function(err, connection) {
+        if (err) throw err; // not connected!
 
         /* Begin transaction */
         connection.beginTransaction(function(err) {
@@ -254,26 +285,26 @@ router.post('/cache/', function(req, res, next){
           secondQueryPart = '(';
           addedRecords = 0;
           rejectedRecords = 0;
-          for(var index = 0; index < req.body.length; index++){
-            var obj = req.body[index];
+          for(var index = 0; index < filteredRecords.length; index++){
+            var obj = filteredRecords[index];
             if(validateCup.checkId(obj.cup_id)) {
               if(addedRecords > 0) {
                 query += ',';
                 secondQueryPart += ', ';
               }
               addedRecords += 1;
-              query += '(' + obj.cup_id + ', ' + obj.dishwasher_id + ', \'' + obj.scanned_at + '\')';
+              query += '(' + obj.cup_id + ', ' + obj.dishwasher_id + ', \'' + dateTime.melbourneTimeToUTC(obj.scanned_at) + '\')';
               secondQueryPart += obj.cup_id;
             }
             else{
               rejectedRecords += 1;
             }
-            if(index == req.body.length - 1) {
+            if(index == filteredRecords.length - 1) {
               query += ';';
               secondQueryPart += ');';
             }
           }
-          if(rejectedRecords != req.body.length){
+          if(rejectedRecords != filteredRecords.length){
             console.log(query);
             // Use the connection
             connection.query(query, function(err, result) {
@@ -283,10 +314,8 @@ router.post('/cache/', function(req, res, next){
                   throw err;
                 });
               }
+              var insertedRecords = result.affectedRows;    
 
-            
-              const log = result.affectedRows;
-              
               // Build query
               var query = 'UPDATE CUP SET status = \'R\' WHERE id IN ' + secondQueryPart;
               console.log(query);
@@ -312,21 +341,33 @@ router.post('/cache/', function(req, res, next){
                   // Don't use the connection here, it has been returned to the pool.
                   console.log(result);
 
-                  // Remove the latter reject records part when validation is done formally or may be not!!??.
-                  rejectStatement =  `${rejectedRecords} records rejected due to incorrect Cup Ids.`;
-                  res.status(201).send(`{"message" : "${result.affectedRows} return records added. ` + rejectStatement + `"}`);
+                  var rejectStatement = `${rejectedRecords} records rejected due to invalid Cup Ids i.e non 10 digit ids.`;
+                  var insertStatement = `${insertedRecords} return records added.`
+                  var duplicateStatement = `${duplicateRecords.length} duplicate records found.`
+
+                  outputObject.inserted = insertStatement;
+                  outputObject.rejected = rejectStatement;
+                  outputObject.duplicatesFound = duplicateStatement;
+                  res.status(201).send(outputObject);
                 });
               });
             });
           }          
           else {
-            res.status(201).send(`{"message" : "All of the ${rejectedRecords} records rejected due to incorrect Cup Ids."}`);
+            var rejectStatement = `${rejectedRecords} records rejected due to invalid Cup Ids i.e non 10 digit ids.`;
+            var insertStatement = `0 return records added.`
+            var duplicateStatement = `${duplicateRecords.length} duplicate records found.`
+
+            outputObject.inserted = insertStatement;
+            outputObject.rejected = rejectStatement;
+            outputObject.duplicatesFound = duplicateStatement;
+            res.status(200).send(outputObject);
           }
         });
         /* End transaction */
-      }
+      });
     }
-  });
+  }
 });
 
 module.exports = router;

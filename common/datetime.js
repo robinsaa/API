@@ -20,7 +20,8 @@ function utcToMelbourneTime(utcDateTime){
         "time": null
     }
     localDateTimeArray = new Date(utcDateTime).toLocaleString("en-AU", {timeZone: "Australia/Melbourne"}).toUpperCase().split(',');
-    dateTimeObject.date = localDateTimeArray[0].trim();
+    dateInParts = localDateTimeArray[0].trim().split('/');
+    dateTimeObject.date = dateInParts[1] + "/" + dateInParts[0] + "/" + dateInParts[2];
     dateTimeObject.time = localDateTimeArray[1].trim();
     return dateTimeObject;
 }

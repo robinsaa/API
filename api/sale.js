@@ -25,6 +25,10 @@ router.get('/', function(req, res, next) {
       console.log(results);
       results.forEach(record => {
         record.scanned_at_melbourne_date_time = dateTime.utcToMelbourneTime(record.scanned_at);
+        
+        // for date time not inside object
+        record.scanned_at_melbourne_date = dateTime.utcToMelbourneTime(record.scanned_at).date;
+        record.scanned_at_melbourne_time = dateTime.utcToMelbourneTime(record.scanned_at).time;
       });
       res.send(results);
     });
@@ -126,7 +130,7 @@ router.get('/salepercafeperday', function(req, res, next){
       // Don't use the connection here, it has been returned to the pool.
       console.log(results);
       results.forEach(record => {
-        record.melbourne_date = dateTime.utcToMelbourneTime(record.date);
+        record.melbourne_date = dateTime.utcToMelbourneTime(record.date).date;
       });
       res.send(results);
     });
@@ -155,6 +159,10 @@ router.get('/last', function(req, res, next){
         console.log(results);
         results.forEach(record => {
           record.scanned_at_melbourne_date_time = dateTime.utcToMelbourneTime(record.scanned_at);
+
+          // for date time not inside object
+          record.scanned_at_melbourne_date = dateTime.utcToMelbourneTime(record.scanned_at).date;
+          record.scanned_at_melbourne_time = dateTime.utcToMelbourneTime(record.scanned_at).time;
         });
         res.send(results);
       });
@@ -184,6 +192,10 @@ router.get('/:id', function(req, res, next){
       console.log(result);
       result.forEach(record => {
         record.scanned_at_melbourne_date_time = dateTime.utcToMelbourneTime(record.scanned_at);
+
+        // for date time not inside object
+        record.scanned_at_melbourne_date = dateTime.utcToMelbourneTime(record.scanned_at).date;
+        record.scanned_at_melbourne_time = dateTime.utcToMelbourneTime(record.scanned_at).time;
       });
       res.send(result);
     });

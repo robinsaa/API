@@ -3,13 +3,20 @@ var returnCacheArray = [];
 
 function checkDuplicate(cup_id){
     if(returnArray.length != 0){
+
+        // Sort returnArray by date-times saved in it
+        returnArray.sort(function(a,b){
+            return a[1] - b[1];
+        })
+
         // Get current date time
         date = new Date();
-        // To get time 10 minutes ago
-        date.setMinutes(date.getMinutes() - 10);
+        // To get time 30 minutes ago
+        date.setMinutes(date.getMinutes() - 30);
 
-        // Delete all cup ids saved more than 10 minutes ago
-        for(var index = 0; index < returnArray.length; index++){
+        // Delete all cup ids saved more than 30 minutes ago
+        index = 0
+        while(index < returnArray.length){
             if(returnArray[index][1] <= date){
                 returnArray.splice(index, 1)
             }
@@ -40,13 +47,20 @@ function checkDuplicate(cup_id){
 
 function checkCacheDuplicate(cup_id, dateTime){
     if(returnCacheArray.length != 0){
-        // Get current date time
-        date = new Date(dateTime);
-        // To get time 10 minutes ago
-        date.setMinutes(date.getMinutes() - 10);
 
-        // Delete all cup ids saved more than 10 minutes ago
-        for(var index = 0; index < returnCacheArray.length; index++){
+        // Sort returnCacheArray by date-times saved in it
+        returnCacheArray.sort(function(a,b){
+            return a[1] - b[1];
+        })
+
+        // Get date time
+        date = new Date(dateTime);
+        // To get time 30 minutes ago
+        date.setMinutes(date.getMinutes() - 30);
+
+        // Delete all cup ids saved more than 30 minutes ago
+        index = 0
+        while(index < returnCacheArray.length){
             if(returnCacheArray[index][1] <= date){
                 returnCacheArray.splice(index, 1)
             }

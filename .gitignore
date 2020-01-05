@@ -55,3 +55,5 @@ jspm_packages/
 .env
 .env.test
 
+# VS code debugger configurations
+.vscode/

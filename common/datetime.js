@@ -12,6 +12,8 @@ function melbourneTimeToUTC(localDateTime){
 }
 
 function utcToMelbourneTime(utcDateTime){
+
+    // While debugging this code, change system/windows time to UTC first!
     if(utcDateTime == null){
         return null;
     }

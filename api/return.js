@@ -1,8 +1,9 @@
 var express = require('express');
 var router = express.Router();
-var validateCup = require('../validate/cup')
-var validateReturn = require('../validate/return')
-var dateTime = require('../common/datetime')
+var validateCup = require('../validate/cup');
+var validateReturn = require('../validate/return');
+var countModule = require('../common/count');
+var dateTimeModule = require('../common/datetime');
 
 // Load the MySQL pool connection
 const pool = require('../db-config');
@@ -24,7 +25,7 @@ router.get('/', function(req, res, next) {
       // Don't use the connection here, it has been returned to the pool.
       console.log(results);
       results.forEach(record => {
-        record.scanned_at_melbourne_date_time = dateTime.utcToMelbourneTime(record.scanned_at);
+        record.scanned_at_melbourne_date_time = dateTimeModule.utcToMelbourneTime(record.scanned_at);
       });
       res.send(results);
     });
@@ -34,8 +35,8 @@ router.get('/', function(req, res, next) {
 /* GET total number of returns between 2 dates if supplied. Format accepted - YYYY/MM/DD */
 router.get('/count', function(req, res, next) {
   
-  startDate = (req.query.startDate)? dateTime.melbourneTimeToUTC(req.query.startDate) : null;
-  endDate = (req.query.endDate) ? dateTime.melbourneTimeToUTC(req.query.endDate) : null;
+  startDate = (req.query.startDate)? dateTimeModule.melbourneTimeToUTC(req.query.startDate) : null;
+  endDate = (req.query.endDate) ? dateTimeModule.melbourneTimeToUTC(req.query.endDate) : null;
   
   if(startDate == null){
     if(endDate == null){
@@ -72,6 +73,44 @@ router.get('/count', function(req, res, next) {
   });
 });
 
+router.get('/last', function(req, res, next){
+
+  // validate count value
+  if(countModule.checkCount(req.query.count)){
+    count = req.query.count;
+    console.log(count);
+    pool.getConnection(function(err, connection) {
+      if (err) throw err; // not connected!
+    
+      // Use the connection
+      
+      connection.query('SELECT r.id, r.cup_id, r.cafe_id, c.cafe_name, r.dishwasher_id, r.scanned_at FROM (SELECT * FROM `RETURN` ORDER BY scanned_at DESC LIMIT ' + count + ') r LEFT OUTER JOIN CAFE c ON r.cafe_id = c.id', function (error, results, fields) {
+        // When done with the connection, release it.
+        connection.release();
+    
+        // Handle error after the release.
+        if (error) throw error;
+
+        // Don't use the connection here, it has been returned to the pool.
+        console.log(results);
+        results.forEach(record => {
+          record.scanned_at_melbourne_date_time = dateTimeModule.utcToMelbourneTime(record.scanned_at);
+
+          // for date time not inside object
+          // record.scanned_at_melbourne_date = dateTimeModule.utcToMelbourneTime(record.scanned_at).date;
+          // record.scanned_at_melbourne_time = dateTimeModule.utcToMelbourneTime(record.scanned_at).time;
+        });
+        res.send(results);
+      });
+    });
+  }
+  else{
+    res.status(400);
+    res.send("Error: 'count' is either not specified or is not a number greater than zero!");
+  }
+});
+
+
 // GET return record by id
 router.get('/:id', function(req, res, next){
   pool.getConnection(function(err, connection) {
@@ -88,12 +127,12 @@ router.get('/:id', function(req, res, next){
       // Don't use the connection here, it has been returned to the pool.
       console.log(result);
       result.forEach(record => {
-        record.scanned_at_melbourne_date_time = dateTime.utcToMelbourneTime(record.scanned_at);
+        record.scanned_at_melbourne_date_time = dateTimeModule.utcToMelbourneTime(record.scanned_at);
       });
       res.send(result);
     });
   });
-})
+});
 
 // POST a return record
 router.post('/', function(req, res, next){
@@ -171,7 +210,7 @@ router.put('/:id', function(req, res, next){
   if(validateCup.checkId(req.body.cup_id)){
 
     // Convert to UTC time
-    var utcTime = dateTime.melbourneTimeToUTC(req.body.scanned_at);
+    var utcTime = dateTimeModule.melbourneTimeToUTC(req.body.scanned_at);
 
     pool.getConnection(function(err, connection) {
       if (err) throw err; // not connected!
@@ -255,7 +294,7 @@ router.post('/cache/', function(req, res, next){
     if(req.body.length != 0) {
 
       // sort by date time although we believe the records will already be sorted.
-      sortedRecords = dateTime.sortByDateTime(req.body);
+      sortedRecords = dateTimeModule.sortByDateTime(req.body);
       var filteredRecords = [];
       var duplicateRecords = [];
       for(var index = 0; index < sortedRecords.length; index++){
@@ -293,7 +332,7 @@ router.post('/cache/', function(req, res, next){
                 secondQueryPart += ', ';
               }
               addedRecords += 1;
-              query += '(' + obj.cup_id + ', ' + obj.dishwasher_id + ', \'' + dateTime.melbourneTimeToUTC(obj.scanned_at) + '\')';
+              query += '(' + obj.cup_id + ', ' + obj.dishwasher_id + ', \'' + dateTimeModule.melbourneTimeToUTC(obj.scanned_at) + '\')';
               secondQueryPart += obj.cup_id;
             }
             else{

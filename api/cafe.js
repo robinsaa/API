@@ -12,7 +12,7 @@ router.get('/', function(req, res, next) {
     if (err) throw err; // not connected!
    
     // Use the connection
-    connection.query('SELECT * FROM ' + table, function (error, results, fields) {
+    connection.query('SELECT id, cafe_name, name, latitude, longitude, created_at, updated_at FROM ' + table, function (error, results, fields) {
       // When done with the connection, release it.
       connection.release();
    
@@ -36,7 +36,7 @@ router.get('/:id', function(req, res, next){
     if (err) throw err; // not connected!
    
     // Use the connection
-    connection.query('SELECT * FROM ' + table + ' WHERE id = ' + req.params.id, function (error, result, fields) {
+    connection.query('SELECT id, cafe_name, name, latitude, longitude, created_at, updated_at FROM ' + table + ' WHERE id = ' + req.params.id, function (error, result, fields) {
       // When done with the connection, release it.
       connection.release();
    

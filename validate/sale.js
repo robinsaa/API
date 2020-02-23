@@ -89,13 +89,4 @@ function checkCacheDuplicate(cup_id, dateTime){
     }
 }
 
-function checkCount(count){
-    if(!isNaN(count)){
-        if(count > 0 && count < 100000){
-            return true
-        }
-    }
-    return false
-}
-
-module.exports = {checkDuplicate, checkCacheDuplicate, checkCount};
+module.exports = {checkDuplicate, checkCacheDuplicate};

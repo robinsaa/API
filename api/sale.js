@@ -106,12 +106,40 @@ router.get('/salepercafeperday', function(req, res, next){
     if (err) throw err; // not connected!
    
     // Use the connection
-    // Manages timezone until Sunday, 4 April, 2021 3:00 am	AEDT
+    // Manages timezone until Sunday, 2 April, 2028 3:00 am	AEDT
     var query = 'SELECT cafe_id, (SELECT cafe_name FROM CAFE WHERE id = cafe_id) as cafe_name, DATE(CONVERT_TZ(scanned_at,\'+00:00\', \
     IF(scanned_at < \'2019-04-06T16:00:00\', \'+11:00\', \
       IF(scanned_at >= \'2019-04-06T16:00:00\' AND scanned_at < \'2019-10-05T16:00:00\', \'+10:00\', \
-        IF(scanned_at < \'2020-04-05T16:00:00\', \'+11:00\', \
-          IF(scanned_at >= \'2020-04-05T16:00:00\' AND scanned_at < \'2020-10-03T16:00:00\', \'+10:00\', \'+11:00\') \
+        IF(scanned_at < \'2020-04-04T16:00:00\', \'+11:00\', \
+          IF(scanned_at >= \'2020-04-04T16:00:00\' AND scanned_at < \'2020-10-03T16:00:00\', \'+10:00\', \
+            IF(scanned_at < \'2021-04-03T16:00:00\', \'+11:00\', \
+              IF(scanned_at >= \'2021-04-03T16:00:00\' AND scanned_at < \'2021-10-02T16:00:00\', \'+10:00\', \
+                IF(scanned_at < \'2022-04-02T16:00:00\', \'+11:00\', \
+                  IF(scanned_at >= \'2022-04-02T16:00:00\' AND scanned_at < \'2022-10-01T16:00:00\', \'+10:00\', \
+                    IF(scanned_at < \'2023-04-01T16:00:00\', \'+11:00\', \
+                      IF(scanned_at >= \'2023-04-01T16:00:00\' AND scanned_at < \'2023-09-30T16:00:00\', \'+10:00\', \
+                        IF(scanned_at < \'2024-04-06T16:00:00\', \'+11:00\', \
+                          IF(scanned_at >= \'2024-04-06T16:00:00\' AND scanned_at < \'2024-10-05T16:00:00\', \'+10:00\', \
+                            IF(scanned_at < \'2025-04-05T16:00:00\', \'+11:00\', \
+                              IF(scanned_at >= \'2025-04-05T16:00:00\' AND scanned_at < \'2025-10-04T16:00:00\', \'+10:00\', \
+                                IF(scanned_at < \'2026-04-04T16:00:00\', \'+11:00\', \
+                                  IF(scanned_at >= \'2026-04-04T16:00:00\' AND scanned_at < \'2026-10-03T16:00:00\', \'+10:00\', \
+                                    IF(scanned_at < \'2027-04-03T16:00:00\', \'+11:00\', \
+                                      IF(scanned_at >= \'2027-04-03T16:00:00\' AND scanned_at < \'2027-10-02T16:00:00\', \'+10:00\', \'+11:00\') \
+                                    ) \
+                                  ) \
+                                ) \
+                              ) \
+                            ) \
+                          ) \
+                        ) \
+                      ) \
+                    ) \
+                  ) \
+                ) \
+              ) \
+            ) \
+          ) \
         ) \
       ) \
     ) \
